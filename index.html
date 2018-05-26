@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style type="text/css">
+  body {
+    font-family: avenir next, sans-serif;
+    font-size: 12px;
+  }
+
+  .zoom {
+    cursor: move;
+    fill: none;
+    pointer-events: all;
+  }
+
+  .axis {
+    stroke-width: 0.5px;
+    stroke: #888;
+    font: 10px avenir next, sans-serif;
+  }
+
+  .axis>path {
+    stroke: #888;
+  }
+</style>
+
+<body>
+</body>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+  var margin = {
+      top: 20,
+      right: 20,
+      bottom: 90,
+      left: 50
+    },
+    margin2 = {
+      top: 230,
+      right: 20,
+      bottom: 30,
+      left: 50
+    },
+    width = 960 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom,
+    height2 = 300 - margin2.top - margin2.bottom;
+
+  var x = d3.scaleLinear().range([0, width]),
+    x2 = d3.scaleLinear().range([0, width]),
+    y = d3.scaleLinear().range([height, 0]),
+    y2 = d3.scaleLinear().range([height2, 0]);
+
+  var brush = d3.brushX()
+    .extent([
+      [0, 0],
+      [width, height2]
+    ])
+    // .on("start brush end", brushed);s
+    .on("brush", brushed);
+
+  var zoom = d3.zoom()
+    .scaleExtent([1, 2])
+    .translateExtent([
+      [0, 0],
+      [width, height]
+    ])
+    .extent([
+      [0, 0],
+      [width, height]
+    ])
+    .on("zoom", zoomed);
+
+  var svg = d3.select("body")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+
+  svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+    .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+
+  var focus = svg.append("g")
+    .attr("class", "focus")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  var context = svg.append("g")
+    .attr("class", "context")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+  focus.append("text") // yAxis label
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.left)
+    .attr("x", 0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("y-axis");
+
+  svg.append("text") // xAxis label
+    .attr("transform",
+      "translate(" + ((width + margin.right + margin.left) / 2) + " ," +
+      (height + margin.top + margin.bottom) + ")")
+    .style("text-anchor", "middle")
+    .text("x-axis");
+
+  svg.append("rect")
+    .attr("class", "zoom")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+    .call(zoom); //see var zoom above
+
+  var data = null;
+  var xAxis = null;
+  var xAxis2 = null;
+  var yAxis = null;
+
+  var data = [{
+      "name": "A",
+      "num": "1",
+      "distance": "1900"
+    },
+    {
+      "name": "B",
+      "num": "2",
+      "distance": "1500"
+    },
+    {
+      "name": "C",
+      "num": "3",
+      "distance": "2500"
+    },
+    {
+      "name": "D",
+      "num": "4",
+      "distance": "2300"
+    },
+    {
+      "name": "E",
+      "num": "5",
+      "distance": "2000"
+    }
+  ]
+  var name = [];
+
+  var local = d3.local();
+
+  var xAxis = d3.axisBottom(x)
+    .tickSize(0)
+    .tickFormat(function(d, i) {
+      local.set(this, data[i].name);
+      return d;
+    })
+
+  xAxis2 = d3.axisBottom(x2);
+
+  yAxis = d3.axisLeft(y).tickSize(0)
+
+  focus.append("g") //append xAxis to main chart
+    .attr("class", "axis x-axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+  focus.append("g")
+    .attr("class", "axis axis--y")
+    .call(d3.axisLeft(d3.scaleLinear()
+      .domain([0, d3.max(data, function(d) {
+        return d.distance;
+      })])
+      .range([height, 0])).tickSize(0));
+
+  data.forEach(function(d) {
+      d.distance = +d.distance;
+      d.num = +d.num;
+      return d;
+    },
+    function(error, data) {
+      if (error) throw error;
+    });
+
+  var xMin = d3.min(data, function(d) {
+    return d.num;
+  });
+  var yMax = Math.max(0, d3.max(data, function(d) {
+    return d.distance;
+  }));
+  x.domain([0, d3.max(data, function(d) {
+    return d.num + 1;
+  })]);
+  y.domain([0, yMax]);
+  x2.domain(x.domain());
+  y2.domain(y.domain());
+
+  updateBar();
+
+  function updateBar(err, newdata) {
+    //********* Main Bar Chart ****************
+
+    var rects = focus.append("g");
+    rects.attr("clip-path", "url(#clip)");
+    rects.selectAll("rects")
+      .data(data)
+      .enter().append("rect")
+      .style("fill", function(d) {
+        return "lightblue";
+      })
+      .style('stroke', 'gray')
+      .attr("class", "rects")
+      .attr("x", function(d) {
+        return x(d.num) - 5;
+      })
+      .attr("y", function(d) {
+        return y(d.distance);
+      })
+      .attr("width", 10)
+      .attr("height", function(d) {
+        return height - y(d.distance);
+      });
+
+    // //********* Brush Bar Chart ****************
+
+    var rects = context.append("g"); //draw bar chart in brush
+    rects.attr("clip-path", "url(#clip)");
+    rects.selectAll("rect")
+      .data(data)
+      .enter().append("rect")
+      .style("fill", function(d) {
+        return "lightblue";
+      })
+      .style('stroke', 'gray')
+      .attr("class", "rectss")
+      .attr("x", function(d) {
+        return x2(d.num);
+      })
+      .attr("y", function(d) {
+        return y2(d.distance);
+      })
+      .attr("width", 10)
+      .attr("height", function(d) {
+        return height2 - y2(d.distance);
+      });
+
+    context.append("g")
+      .attr("class", "axis x-axis")
+      .attr("transform", "translate(0," + height2 + ")")
+      .call(xAxis2);
+
+    context.append("g")
+      .attr("class", "brush")
+      .call(brush)
+      .call(brush.move, x.range());
+  } //closes updateFunction
+  // }); //closes d3.json()
+
+  function brushed() {
+    if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+    var s = d3.event.selection || x2.range();
+    // console.log("s: " + s);
+
+    x.domain(s.map(x2.invert));
+    focus.selectAll(".rects")
+      .attr("x", function(d) {
+        return x(d.num);
+      })
+      .attr("y", function(d) {
+        return y(d.distance);
+      })
+      .attr("width", function(d) {
+        return 10;
+      })
+      .attr("height", function(d) {
+        return height - y(d.distance);
+      });
+
+    xAxis.tickFormat(function() {
+      return local.get(this)
+    });
+    gX.call(axis)
+
+    focus.select(".x-axis").call(xAxis);
+    svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
+      .scale(width / (s[1] - s[0]))
+      .translate(-s[0], 0));
+    var e = d3.event.selection;
+    // console.log("e: " + e);
+    var selectedrects = focus.selectAll('.rects').filter(function() {
+      var xValue = this.getAttribute('x');
+      return e[0] <= xValue && xValue <= e[1];
+    });
+    // if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+    //
+    // // get bounds of selection
+    // // var s = d3.event.selection,
+    // //   nD = [];
+    // // x2.domain().forEach((d) => {
+    // //   var pos = x2(d) + 10 / 2;
+    // //   if (pos > s[0] && pos < s[1]) {
+    // //     nD.push(d);
+    // //   }
+    // // });
+    // var t = d3.event.transform;
+    // var s = d3.event.selection || x2.range();
+    // x.domain(s.map(x2.invert, x2));
+    //
+    // // x.domain(nD);
+    //
+    // // focus.selectAll(".rects")
+    // //   .remove().exit()
+    // //   .data(data.filter(function(d) {
+    // //     return nD.indexOf(d.num) > -1
+    // //   }))
+    // //   .enter().append("rect")
+    // //   .style("fill", function(d) {
+    // //     return "lightblue";
+    // //   })
+    // //   .style('stroke', 'gray')
+    // //   .attr("class", "rects")
+    // //   .attr("x", function(d) {
+    // //     return x(d.num);
+    // //   })
+    // //   .attr("y", function(d) {
+    // //     return y(d.distance);
+    // //   })
+    // //   .attr("width", 10)
+    // //   .attr("height", function(d) {
+    // //     return height - y(d.distance);
+    // //   });
+    //
+    // focus.selectAll(".rects")
+    //   .attr("x", function(d) {
+    //     return x(d.num);
+    //   })
+    //   .attr("y", function(d) {
+    //     return y(d.distance);
+    //   })
+    //   .attr("width", function(d) {
+    //     return 10;
+    //   })
+    //   .attr("height", function(d) {
+    //     return height - y(d.distance);
+    //   });
+    //
+    // focus.select(".x-axis").call(xAxis);
+    //
+    // context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
+    // // svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
+    // //   .scale(width / (s[1] - s[0]))
+    // //   .translate(-s[0], 0));
+  };
+
+  function zoomed() {
+    // if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+    // var s = d3.event.selection,
+    //   nD = [];
+    // x2.domain().forEach((d) => {
+    //   var pos = x2(d) + 10 / 2;
+    //   if (pos > s[0] && pos < s[1]) {
+    //     nD.push(d);
+    //   }
+    // });
+    // console.log(("blahhhhh"));
+    // nD.forEach((e) => {
+    //   console.log("e = " + s);
+    // })
+    // var t = d3.event.transform;
+    // x.domain(t.rescaleX(x2).domain());
+    // // x.domain(nD);
+    // focus.selectAll(".rects")
+    //   .attr("x", function(d) {
+    //     return x(d.num);
+    //   })
+    //   .attr("y", function(d) {
+    //     return y(d.distance);
+    //   })
+    //   .attr("width", function(d) {
+    //     return 10;
+    //   })
+    //   .attr("height", function(d) {
+    //     return height - y(d.distance);
+    //   });
+    // focus.select(".x-axis").call(xAxis);
+    // context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
+  };
+</script>

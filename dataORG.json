@@ -1,0 +1,131 @@
+[{
+    "name": "A",
+    "num": "1",
+    "distance": "1100"
+  },
+  {
+    "name": "B",
+    "num": "2",
+    "distance": "1500"
+  },
+  {
+    "name": "C",
+    "num": "3",
+    "distance": "2000"
+  },
+  {
+    "name": "D",
+    "num": "4",
+    "distance": "2500"
+  },
+  {
+    "name": "E",
+    "num": "5",
+    "distance": "1975"
+  },
+  {
+    "name": "F",
+    "num": "6",
+    "distance": "3000"
+  },
+  {
+    "name": "G",
+    "num": "7",
+    "distance": "2100"
+  },
+  {
+    "name": "H",
+    "num": "8",
+    "distance": "2100"
+  },
+  {
+    "name": "I",
+    "num": "9",
+    "distance": "3300"
+  },
+  {
+    "name": "J",
+    "num": "10",
+    "distance": "2000"
+  },
+  {
+    "name": "K",
+    "num": "11",
+    "distance": "2100"
+  },
+  {
+    "name": "L",
+    "num": "12",
+    "distance": "2000"
+  },
+  {
+    "name": "M",
+    "num": "13",
+    "distance": "2000"
+  },
+  {
+    "name": "N",
+    "num": "14",
+    "distance": "2000"
+  },
+  {
+    "name": "O",
+    "num": "15",
+    "distance": "3000"
+  },
+  {
+    "name": "p",
+    "num": "16",
+    "distance": "1975"
+  },
+  {
+    "name": "Q",
+    "num": "17",
+    "distance": "3000"
+  },
+  {
+    "name": "R",
+    "num": "18",
+    "distance": "2100"
+  },
+  {
+    "name": "S",
+    "num": "19",
+    "distance": "2100"
+  },
+  {
+    "name": "T",
+    "num": "20",
+    "distance": "3300"
+  },
+  {
+    "name": "U",
+    "num": "21",
+    "distance": "1500"
+  },
+  {
+    "name": "V",
+    "num": "22",
+    "distance": "2100"
+  },
+  {
+    "name": "W",
+    "num": "23",
+    "distance": "2000"
+  },
+  {
+    "name": "X",
+    "num": "24",
+    "distance": "1800"
+  },
+  {
+    "name": "Y",
+    "num": "25",
+    "distance": "2200"
+  },
+  {
+    "name": "Z",
+    "num": "26",
+    "distance": "3000"
+  }
+]
